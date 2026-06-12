@@ -1,0 +1,4 @@
+# Nur die Website veröffentlichen – Quellen & Projektdateien privat halten
+*.pdf
+CLAUDE.md
+.claude/

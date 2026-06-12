@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algorithmen, Milieus & Meinungsbildung – PGW-Transferprojekt</title>
+<meta name="description" content="Datenjournalistisches Transferprojekt (PGW S2): Verstärken Empfehlungsalgorithmen sozialer Medien die Ungleichheiten zwischen Sinus-Milieus?">
+<style>
+:root{
+  --paper:#f7f4ee;
+  --paper-2:#efe9df;
+  --ink:#16140f;
+  --ink-soft:#4a463d;
+  --line:#d8d0c2;
+  --post:#1d6f8b;        /* postmateriell */
+  --post-tint:rgba(29,111,139,.14);
+  --prek:#cf5a26;        /* prekär */
+  --prek-tint:rgba(207,90,38,.14);
+  --belegt:#2f7d4f;      /* belegt = grün */
+  --hypo:#a8631c;        /* hypothese = amber */
+  --na:#9b9486;          /* nicht ausgewiesen */
+  --maxw:1080px;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:18px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%}
+h1,h2,h3{font-family:var(--serif);line-height:1.08;letter-spacing:-.01em;margin:0 0 .4em}
+h2{font-size:clamp(1.9rem,4.4vw,3rem);margin-top:0}
+h3{font-size:clamp(1.25rem,2.6vw,1.7rem)}
+p{margin:0 0 1.1em}
+a{color:var(--post);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid var(--prek);outline-offset:3px;border-radius:3px;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.eyebrow{
+  font-family:var(--sans);font-weight:700;text-transform:uppercase;
+  letter-spacing:.16em;font-size:.74rem;color:var(--prek);margin:0 0 .9rem;
+}
+.lede{font-size:clamp(1.05rem,2vw,1.3rem);color:var(--ink-soft);max-width:60ch}
+
+/* ---------- progress + nav ---------- */
+#progress{position:fixed;top:0;left:0;height:4px;width:0;background:var(--prek);z-index:60;transition:width .1s linear}
+nav.top{
+  position:sticky;top:0;z-index:50;background:rgba(247,244,238,.9);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+}
+nav.top .wrap{display:flex;align-items:center;gap:18px;height:54px;flex-wrap:wrap}
+nav.top .brand{font-family:var(--serif);font-weight:700;font-size:1.02rem;margin-right:auto}
+nav.top a{font-size:.82rem;color:var(--ink-soft);text-decoration:none;font-weight:600}
+nav.top a:hover{color:var(--ink)}
+@media(max-width:760px){nav.top .links{display:none}}
+
+/* ---------- hero ---------- */
+header.hero{
+  padding:clamp(56px,11vw,118px) 0 clamp(40px,7vw,76px);
+  border-bottom:3px solid var(--ink);position:relative;overflow:hidden;
+}
+.hero h1{font-size:clamp(2.5rem,7.2vw,5.3rem);max-width:18ch}
+.hero .q-mark{color:var(--prek)}
+.hero .sub{margin-top:1.5rem;max-width:62ch;font-size:clamp(1.05rem,2.1vw,1.32rem);color:var(--ink-soft)}
+.tagrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:2rem}
+.tag{
+  font-size:.78rem;font-weight:700;letter-spacing:.04em;border:1.5px solid var(--ink);
+  padding:6px 12px;border-radius:999px;background:transparent;
+}
+.tag.post{border-color:var(--post);color:var(--post)}
+.tag.prek{border-color:var(--prek);color:var(--prek)}
+.scrollhint{margin-top:2.4rem;font-size:.8rem;color:var(--ink-soft);letter-spacing:.1em;text-transform:uppercase}
+
+/* ---------- sections ---------- */
+section{padding:clamp(54px,9vw,92px) 0;border-bottom:1px solid var(--line)}
+.section-no{font-family:var(--serif);font-size:1rem;color:var(--prek);font-weight:700;letter-spacing:.1em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+@media(max-width:860px){.grid2{grid-template-columns:1fr;gap:28px}}
+
+/* note / disclaimer chip */
+.qualnote{
+  display:inline-flex;align-items:center;gap:9px;font-size:.82rem;font-weight:600;
+  color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);
+  padding:8px 13px;border-radius:8px;line-height:1.35;
+}
+.qualnote::before{content:"i";display:inline-grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--ink);color:var(--paper);font-family:var(--serif);font-weight:700;font-size:.75rem;flex:none}
+
+/* milieu intro cards */
+.miliogrid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:28px}
+@media(max-width:680px){.miliogrid{grid-template-columns:1fr}}
+.mcard{border:1px solid var(--line);border-radius:14px;padding:22px;background:#fff}
+.mcard.post{border-top:5px solid var(--post)}
+.mcard.prek{border-top:5px solid var(--prek)}
+.mcard h3{margin-bottom:.3em}
+.mcard p{font-size:.96rem;color:var(--ink-soft);margin-bottom:0}
+
+/* ---------- radar compare ---------- */
+.compare-shell{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center;margin-top:26px}
+@media(max-width:860px){.compare-shell{grid-template-columns:1fr}}
+.radar-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 8px 6px}
+.toggles{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 16px}
+.toggle{
+  cursor:pointer;border:1.5px solid var(--line);background:#fff;border-radius:999px;
+  padding:9px 15px;font-weight:700;font-size:.86rem;display:inline-flex;align-items:center;gap:9px;
+  color:var(--ink);transition:background .15s,border-color .15s,opacity .15s;
+}
+.toggle .dot{width:13px;height:13px;border-radius:50%;flex:none}
+.toggle.post .dot{background:var(--post)}
+.toggle.prek .dot{background:var(--prek)}
+.toggle[aria-pressed="false"]{opacity:.42;background:var(--paper-2)}
+.toggle[aria-pressed="false"] .dot{box-shadow:inset 0 0 0 3px #fff}
+.axis-detail{
+  background:var(--paper-2);border:1px solid var(--line);border-radius:12px;
+  padding:18px 20px;min-height:172px;margin-top:6px;
+}
+.axis-detail h4{margin:.1em 0 .55em;font-family:var(--serif);font-size:1.18rem}
+.axis-detail .rowvals{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:.7em}
+.axis-detail .rowvals span{font-size:.86rem;font-weight:700}
+.axis-detail .rowvals b{font-family:var(--serif);font-size:1.05rem}
+.axis-detail p{font-size:.92rem;color:var(--ink-soft);margin:0}
+.axis-detail .post-val{color:var(--post)}
+.axis-detail .prek-val{color:var(--prek)}
+.hint-small{font-size:.78rem;color:var(--ink-soft);margin-top:10px}
+text.axislbl{font-family:var(--sans);font-size:12.5px;font-weight:700;fill:var(--ink);cursor:pointer}
+text.axislbl.active{fill:var(--prek)}
+text.ringlbl{font-family:var(--sans);font-size:10px;fill:var(--na)}
+.vtx{cursor:pointer;transition:r .12s}
+.vtx:hover{r:8}
+
+/* ---------- bar chart (Nachrichtenkompetenz) ---------- */
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin:6px 0 26px;font-size:.84rem;font-weight:600}
+.legend i{display:inline-block;width:30px;height:13px;border-radius:3px;vertical-align:-1px;margin-right:7px}
+.swatch-hoch{background:var(--post)}
+.swatch-niedrig{background:var(--prek)}
+.swatch-na{background:repeating-linear-gradient(45deg,#e7e0d3,#e7e0d3 5px,#f3eee4 5px,#f3eee4 10px);border:1px solid var(--line)}
+.bars{margin-top:10px}
+.brow{border-top:1px solid var(--line);padding:16px 0;cursor:pointer}
+.brow:hover{background:var(--paper-2)}
+.brow-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.brow-head .name{font-family:var(--serif);font-weight:700;font-size:1.12rem;flex:1}
+.brow-head .chev{color:var(--na);font-size:.8rem;font-weight:700}
+.metric{display:grid;grid-template-columns:230px 1fr;gap:12px;align-items:center;margin:7px 0}
+@media(max-width:600px){.metric{grid-template-columns:1fr}}
+.metric .mlabel{font-size:.82rem;font-weight:600;color:var(--ink-soft)}
+.track{background:var(--paper-2);border-radius:7px;height:26px;position:relative;overflow:hidden;border:1px solid var(--line)}
+.fill{height:100%;border-radius:6px 0 0 6px;display:flex;align-items:center;padding-left:11px;color:#fff;font-size:.76rem;font-weight:700;white-space:nowrap;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+.fill.hoch{background:var(--post)}
+.fill.niedrig{background:var(--prek)}
+.track.na{background:repeating-linear-gradient(45deg,#ece5d8,#ece5d8 6px,#f5f0e7 6px,#f5f0e7 12px)}
+.track.na .nalabel{position:absolute;inset:0;display:flex;align-items:center;padding-left:11px;font-size:.76rem;font-weight:700;color:var(--na)}
+.brow .detail{display:none;font-size:.9rem;color:var(--ink-soft);background:#fff;border-left:3px solid var(--prek);padding:12px 16px;border-radius:0 8px 8px 0;margin-top:6px}
+.brow.open .detail{display:block}
+.brow.open{background:var(--paper-2)}
+
+/* ---------- belegt vs hypothese ---------- */
+.bh-toggle{display:inline-flex;border:2px solid var(--ink);border-radius:999px;overflow:hidden;margin:6px 0 30px}
+.bh-toggle button{
+  border:none;background:transparent;padding:12px 22px;font-weight:700;font-size:.88rem;
+  cursor:pointer;color:var(--ink-soft);font-family:var(--sans);
+}
+.bh-toggle button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;align-items:stretch;margin-top:8px}
+@media(max-width:820px){.flow{grid-template-columns:1fr}}
+.fnode{background:#fff;border:2px solid var(--line);border-radius:13px;padding:18px;position:relative;transition:border-color .25s,box-shadow .25s,opacity .25s}
+.fnode h4{margin:0 0 .45em;font-family:var(--serif);font-size:1.08rem}
+.fnode p{font-size:.83rem;color:var(--ink-soft);margin:0}
+.fnode .stamp{position:absolute;top:-12px;left:16px;font-size:.68rem;font-weight:800;letter-spacing:.06em;padding:3px 9px;border-radius:999px;text-transform:uppercase}
+.fnode.belegt .stamp{background:var(--belegt);color:#fff}
+.fnode.hypo .stamp{background:var(--hypo);color:#fff}
+.fnode.hypo{border-style:dashed}
+.farrow{display:grid;place-items:center;font-size:1.6rem;color:var(--na);padding:6px}
+@media(max-width:820px){.farrow{transform:rotate(90deg)}}
+.flow.show-belegt .fnode.hypo{opacity:.32}
+.flow.show-hypo .fnode.belegt{opacity:.4}
+.flow.show-hypo .fnode.hypo{box-shadow:0 0 0 4px rgba(168,99,28,.18)}
+.flow.show-belegt .fnode.belegt{box-shadow:0 0 0 4px rgba(47,125,79,.16)}
+.bh-explain{margin-top:24px;background:var(--paper-2);border-radius:12px;padding:20px 22px;border:1px solid var(--line);font-size:.95rem}
+.bh-explain[data-state="hypo"] .e-belegt,.bh-explain[data-state="belegt"] .e-hypo{display:none}
+
+/* gegenbefunde */
+.counter-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:30px}
+@media(max-width:760px){.counter-grid{grid-template-columns:1fr}}
+.ccard{background:#fff;border:1px solid var(--line);border-left:5px solid var(--belegt);border-radius:12px;padding:20px}
+.ccard h4{margin:0 0 .4em;font-family:var(--serif);font-size:1.16rem}
+.ccard p{font-size:.92rem;color:var(--ink-soft);margin:0}
+.caveat{margin-top:26px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--prek);border-radius:12px;padding:20px 22px}
+.caveat h4{margin:0 0 .4em;font-family:var(--serif);font-size:1.16rem;color:var(--prek)}
+.caveat p{font-size:.95rem;color:var(--ink-soft);margin:0}
+
+/* fazit */
+.fazit{background:var(--ink);color:var(--paper)}
+.fazit h2,.fazit h3{color:var(--paper)}
+.fazit .eyebrow{color:#f0a878}
+.fazit p{color:#e8e2d6;font-size:clamp(1.05rem,2vw,1.28rem)}
+.fazit .lq{font-family:var(--serif);font-size:clamp(1.3rem,3vw,1.9rem);line-height:1.3;border-left:4px solid var(--prek);padding-left:20px;margin:8px 0 30px;color:#fff}
+.fazit-points{display:grid;gap:14px;margin-top:8px}
+.fazit-points li{list-style:none;display:flex;gap:14px;align-items:flex-start}
+.fazit-points .n{font-family:var(--serif);font-size:1.5rem;color:#f0a878;flex:none;line-height:1}
+.fazit-points span{font-size:.98rem;color:#e8e2d6}
+
+/* footer */
+footer{background:var(--paper-2);padding:54px 0 70px;font-size:.88rem;color:var(--ink-soft)}
+footer h4{font-family:var(--sans);text-transform:uppercase;letter-spacing:.12em;font-size:.74rem;color:var(--ink);margin:0 0 .8em}
+footer .fcols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:34px}
+@media(max-width:780px){footer .fcols{grid-template-columns:1fr;gap:26px}}
+footer a{color:var(--post);word-break:break-word}
+footer ul{margin:0;padding-left:18px}
+footer li{margin-bottom:.5em}
+.authors{font-family:var(--serif);font-size:1.15rem;color:var(--ink);margin-top:4px}
+.ai-note{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);font-size:.8rem}
+
+/* reveal animation */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,.fill{transition:none!important;animation:none!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<div id="progress" aria-hidden="true"></div>
+
+<nav class="top" aria-label="Seitennavigation">
+  <div class="wrap">
+    <span class="brand">Algorithmen &amp; Milieus</span>
+    <span class="links">
+      <a href="#milieus">Milieus</a>
+      <a href="#vergleich">Vergleich</a>
+      <a href="#kompetenz">Nachrichtenkompetenz</a>
+      <a href="#bruecke">Algorithmus</a>
+      <a href="#fazit">Fazit</a>
+    </span>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">PGW-Transferprojekt&nbsp;·&nbsp;S2&nbsp;·&nbsp;Informatik + PGW</p>
+    <h1>Verstärken Algorithmen die Kluft zwischen den Milieus<span class="q-mark">?</span></h1>
+    <p class="sub">Leitfrage: „Inwiefern verstärken Empfehlungsalgorithmen sozialer Medien
+      Ungleichheiten zwischen Milieus und gefährden so den demokratischen
+      Meinungsbildungsprozess?"</p>
+    <div class="tagrow">
+      <span class="tag post">postmaterielles Milieu</span>
+      <span class="tag prek">prekäres Milieu</span>
+      <span class="tag">Nachrichtenkompetenz</span>
+      <span class="tag">Fake News</span>
+    </div>
+    <p class="scrollhint">↓ scrollen &amp; selbst erkunden</p>
+  </div>
+</header>
+
+<!-- ============ 1 · WAS SIND MILIEUS ============ -->
+<section id="milieus">
+  <div class="wrap reveal">
+    <p class="section-no">01 — Grundlage</p>
+    <h2>Was sind Sinus-Milieus?</h2>
+    <div class="grid2">
+      <div>
+        <p>Sinus-Milieus fassen Menschen zu Gruppen zusammen, die sich in
+          <strong>Werten, Lebensstil und sozialer Lage</strong> ähneln – nicht nur nach Alter
+          oder Einkommen. Für unsere Frage entscheidend ist: Die Milieus unterscheiden sich
+          stark darin, <em>welche</em> Medien sie nutzen, <em>wie sicher</em> sie damit umgehen
+          und <em>wie kritisch</em> sie Informationen prüfen.</p>
+        <p>Wir stellen zwei Milieus in den Mittelpunkt, die einen besonders scharfen Kontrast
+          bilden – das <strong style="color:var(--post)">postmaterielle</strong> und das
+          <strong style="color:var(--prek)">prekäre</strong> Milieu –, und weiten den Blick
+          danach auf weitere genannte Milieus aus.</p>
+        <p class="qualnote">Alle Werte sind <strong>&nbsp;qualitative Experteneinschätzungen, keine Messwerte.</strong>
+          Die Quelle ist qualitativ – es gibt bewusst keine Prozentzahlen.</p>
+      </div>
+      <div class="miliogrid">
+        <div class="mcard post">
+          <h3>Postmateriell</h3>
+          <p>Bildungsnah, kritisch-reflektiert, politisch interessiert. Nutzt Medien gezielt zur
+          Information und Einordnung, bevorzugt fundierte journalistische Inhalte – und begegnet
+          sozialen Netzwerken eher distanziert.</p>
+        </div>
+        <div class="mcard prek">
+          <h3>Prekär</h3>
+          <p>Stark von Alltagsbewältigung geprägt. Nutzt Medien zur Orientierung und Entlastung,
+          ist fernsehzentriert, digital unsicherer und traut sich weniger zu, Fake News oder die
+          Glaubwürdigkeit von Medien gut einzuschätzen.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 · INTERAKTIVER VERGLEICH ============ -->
+<section id="vergleich">
+  <div class="wrap reveal">
+    <p class="section-no">02 — Schwerpunkt 1</p>
+    <h2>Postmateriell ↔ Prekär im direkten Vergleich</h2>
+    <p class="lede">Sechs Dimensionen auf einer relativen Skala <strong>niedrig – mittel – hoch</strong>.
+      Milieus ein-/ausblenden, eine Achse anklicken und den Beleg dazu lesen.</p>
+
+    <div class="compare-shell">
+      <div class="radar-card">
+        <div class="toggles" role="group" aria-label="Milieus ein- oder ausblenden">
+          <button class="toggle post" id="tg-post" aria-pressed="true"><span class="dot"></span>Postmateriell</button>
+          <button class="toggle prek" id="tg-prek" aria-pressed="true"><span class="dot"></span>Prekär</button>
+        </div>
+        <svg id="radar" viewBox="0 0 480 470" role="img"
+          aria-label="Netzdiagramm: Vergleich postmaterielles und prekäres Milieu auf sechs Dimensionen.">
+        </svg>
+      </div>
+
+      <div>
+        <div class="axis-detail" id="axisDetail" aria-live="polite">
+          <h4 id="adTitle">Achse wählen</h4>
+          <div class="rowvals" id="adVals"></div>
+          <p id="adText">Klicke im Diagramm auf eine Achsen­beschriftung oder einen Punkt,
+            um die Einschätzung und ihren Beleg aus der Quelle zu sehen.</p>
+        </div>
+        <p class="hint-small">Skala: 1&nbsp;=&nbsp;niedrig, 2&nbsp;=&nbsp;mittel, 3&nbsp;=&nbsp;hoch ·
+          ordinale Einschätzung, kein Messwert.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 · NACHRICHTENKOMPETENZ ============ -->
+<section id="kompetenz">
+  <div class="wrap reveal">
+    <p class="section-no">03 — Schwerpunkt 2</p>
+    <h2>Nachrichtenkompetenz &amp; Fake-News-Erkennung</h2>
+    <p class="lede">Selbsteinschätzung über die Milieus hinweg: <em>Traue ich mir zu, Fake News zu
+      erkennen?</em> und <em>Kann ich die Glaubwürdigkeit von Medien gut beurteilen?</em></p>
+
+    <div class="legend">
+      <span><i class="swatch-hoch"></i>eher hoch</span>
+      <span><i class="swatch-niedrig"></i>deutlich niedriger</span>
+      <span><i class="swatch-na"></i>von der Quelle nicht ausgewiesen</span>
+    </div>
+    <p class="qualnote" style="margin-bottom:6px"><strong>&nbsp;Wichtig:</strong>&nbsp;Wo die Quelle ein Milieu
+      auf einer Dimension nicht einordnet, bleibt das Feld bewusst leer („nicht ausgewiesen") –
+      es wird nichts dazuerfunden.</p>
+
+    <div class="bars" id="bars"></div>
+    <p class="hint-small">Zwei ordinale Gruppen (hoch / niedrig) aus der Experteneinschätzung –
+      keine Prozentwerte. Zeile anklicken für den Beleg.</p>
+  </div>
+</section>
+
+<!-- ============ 4 · BRÜCKENSCHLAG ZUM ALGORITHMUS ============ -->
+<section id="bruecke">
+  <div class="wrap reveal">
+    <p class="section-no">04 — Der kritische Schritt</p>
+    <h2>Vom Milieu-Unterschied zur algorithmischen Verstärkung</h2>
+    <p class="lede">Hier liegt der heikelste Punkt des Projekts: Was die Daten wirklich
+      <strong>belegen</strong> – und wo eine <strong>Hypothese</strong> beginnt. Umschalten:</p>
+
+    <div class="bh-toggle" role="group" aria-label="Ansicht umschalten">
+      <button id="bhBelegt" aria-pressed="true">Belegt durch die Daten</button>
+      <button id="bhHypo" aria-pressed="false">Hypothese (nicht gemessen)</button>
+    </div>
+
+    <div class="flow show-belegt" id="flow">
+      <div class="fnode belegt">
+        <span class="stamp">belegt</span>
+        <h4>Milieu-Unterschiede</h4>
+        <p>Bildung, digitale Sicherheit, Quellenvielfalt und Nachrichtenkompetenz fallen je nach
+          Milieu deutlich verschieden aus.</p>
+      </div>
+      <div class="farrow" aria-hidden="true">→</div>
+      <div class="fnode belegt">
+        <span class="stamp">belegt</span>
+        <h4>Vorbedingung / Anfälligkeit</h4>
+        <p>Wer digital unsicher ist, ein enges Medienrepertoire und geringes Quellenvertrauen
+          hat, ist anfälliger für Desinformation.</p>
+      </div>
+      <div class="farrow" aria-hidden="true">⇢</div>
+      <div class="fnode hypo">
+        <span class="stamp">Hypothese</span>
+        <h4>Algorithmische Verstärkung</h4>
+        <p>Empfehlungsalgorithmen <em>könnten</em> diese Unterschiede vertiefen – das ist ein
+          theoretischer Wirkmechanismus, in der Quelle nicht direkt gemessen.</p>
+      </div>
+      <div class="farrow" aria-hidden="true">⇢</div>
+      <div class="fnode hypo">
+        <span class="stamp">Hypothese</span>
+        <h4>Gefahr für die Meinungsbildung</h4>
+        <p>Verstärkte Ungleichheit <em>könnte</em> den demokratischen Meinungsbildungs­prozess
+          schwächen – die mögliche Folge, kein Messergebnis.</p>
+      </div>
+    </div>
+
+    <div class="bh-explain" id="bhExplain" data-state="belegt">
+      <p class="e-belegt"><strong>Belegt:</strong> Die SINUS-Einschätzung zeigt klare Unterschiede
+        zwischen den Milieus als <em>Vorbedingung</em>. Prekäre, Traditionelle und Teile der
+        Nostalgisch-Bürgerlichen sind durch geringe digitale Sicherheit, schwächere Fake-News-Erkennung
+        und enges Repertoire <em>anfälliger</em> – das ist datengestützt.</p>
+      <p class="e-hypo"><strong>Hypothese:</strong> Dass Empfehlungs­algorithmen diese Anfälligkeit
+        gezielt <em>verstärken</em> und so die Demokratie gefährden, ist ein plausibler, aber
+        <em>theoretischer</em> Wirkmechanismus. Die qualitative Quelle misst keine algorithmische
+        Verstärkung – diesen Schritt darf man nicht als belegt darstellen.</p>
+    </div>
+
+    <h3 style="margin-top:54px">Gegenbefunde: Es ist nicht so einfach</h3>
+    <p class="lede" style="margin-bottom:0">Die Daten sprechen <strong>gegen</strong> die simple Annahme
+      „digital = größere Kluft". Entscheidend ist nicht <em>ob</em>, sondern <em>wie</em> digitale Medien
+      genutzt werden.</p>
+
+    <div class="counter-grid">
+      <div class="ccard">
+        <h4>Digital affin ≠ unkritisch</h4>
+        <p>Gerade Performer, Expeditive und Neo-Ökologische nutzen Social Media intensiv – halten es
+          aber zugleich für leicht manipulierbar und voller Fake News. Hohe Nutzung heißt nicht
+          geringes Problembewusstsein.</p>
+      </div>
+      <div class="ccard">
+        <h4>Vertrauen bleibt bei etablierten Medien</h4>
+        <p>Auch stark digitalisierte Milieus vertrauen journalistischen Angeboten häufig mehr als
+          sozialen Netzwerken – besonders Postmaterielle, aber auch Performer, Expeditive und
+          Neo-Ökologische trennen klar zwischen beidem.</p>
+      </div>
+      <div class="ccard">
+        <h4>Digital kann Repertoire erweitern</h4>
+        <p>Bei mehreren Milieus führt digitale Nutzung nicht zur Verengung, sondern zu <em>mehr</em>
+          Quellen: Internet, Podcasts, Streaming, Apps und Print parallel – Neo-Ökologische rufen
+          Nachrichten mehrfach täglich aus verschiedenen Quellen ab.</p>
+      </div>
+      <div class="ccard">
+        <h4>Die Kluft verläuft nicht „digital / nicht-digital"</h4>
+        <p>Sie hängt stärker an Bildung, sozialer Lage, politischem Interesse, Quellenvertrauen und
+          Nachrichtenkompetenz – nicht einfach am Gerät.</p>
+      </div>
+    </div>
+
+    <div class="caveat">
+      <h4>… aber: Verstärkung ist möglich</h4>
+      <p>Wenn <strong>geringe digitale Kompetenz, geringes Quellenvertrauen und ein enges
+        Medienrepertoire zusammenkommen</strong>, können digitale Medien bestehende Unterschiede
+        sehr wohl verstärken. Das betrifft eher Prekäre, Traditionelle und Teile des
+        Nostalgisch-Bürgerlichen Milieus. Genau hier setzt die Hypothese zur algorithmischen
+        Verstärkung an.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 · FAZIT ============ -->
+<section id="fazit" class="fazit">
+  <div class="wrap reveal">
+    <p class="eyebrow">05 — Fazit</p>
+    <h2>Antwort auf die Leitfrage</h2>
+    <p class="lq">„Inwiefern verstärken Empfehlungsalgorithmen sozialer Medien Ungleichheiten
+      zwischen Milieus und gefährden so den demokratischen Meinungsbildungsprozess?"</p>
+    <ul class="fazit-points">
+      <li><span class="n">1</span><span><strong>Die Vorbedingung ist belegt.</strong> Milieus
+        unterscheiden sich deutlich in Nachrichtenkompetenz, digitaler Sicherheit, Quellenvielfalt
+        und politischem Interesse. Prekäre sind erkennbar anfälliger als Postmaterielle.</span></li>
+      <li><span class="n">2</span><span><strong>Die Verstärkung bleibt Hypothese.</strong> Dass
+        Algorithmen diese Kluft aktiv vertiefen, ist ein plausibler Wirkmechanismus – die
+        qualitative SINUS-Quelle misst ihn nicht. Belegt und Vermutet sauber zu trennen ist Teil
+        der Antwort.</span></li>
+      <li><span class="n">3</span><span><strong>Es ist nicht deterministisch.</strong> Gegenbefunde
+        zeigen: digitale Nutzung kann Vielfalt und Kritikfähigkeit auch <em>fördern</em>. Die Kluft
+        hängt an Bildung und Kompetenz – nicht allein an der Technik.</span></li>
+    </ul>
+    <p style="margin-top:30px">Für die Demokratie heißt das: Empfehlungsalgorithmen können
+      bestehende Ungleichheiten <em>verschärfen</em>, wo Kompetenz und Vertrauen fehlen – sie sind
+      aber kein Automatismus. Der wirksamste Hebel ist <strong>Nachrichtenkompetenz</strong>, gerade
+      in den Milieus, die heute am wenigsten gewappnet sind.</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="fcols">
+      <div>
+        <h4>Datengrundlage</h4>
+        <p>SINUS-Infopaket Medien und Kommunikation 2025/26 (qualitative Einschätzung).
+          Experten-Antworten auf eine Schul-Projektanfrage. Alle Skalen sind ordinale
+          Experteneinschätzungen – <strong>keine Messwerte und keine Prozentangaben.</strong></p>
+        <h4 style="margin-top:1.6em">Autoren</h4>
+        <p class="authors">Hassan Safi &amp; Damien Tran</p>
+      </div>
+      <div>
+        <h4>Schwerpunkte</h4>
+        <ul>
+          <li>Milieu-Kontrast postmateriell ↔ prekär</li>
+          <li>Nachrichtenkompetenz &amp; Fake-News-Erkennung über die Milieus hinweg</li>
+          <li>Trennung von Belegtem und Hypothese</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Weiterführende, frei zugängliche Quellen</h4>
+        <ul>
+          <li><a href="https://leibniz-hbi.de/hbi-publications/reuters-report-2025-ergebnisse-fuer-deutschland/" target="_blank" rel="noopener">Reuters Institute Digital News Report 2025 (DE)</a></li>
+          <li><a href="https://www.interface-eu.org/publications/quelle-internet-digitale-nachrichtenkompetenz" target="_blank" rel="noopener">„Quelle: Internet?" – Digitale Nachrichtenkompetenz</a></li>
+          <li><a href="https://mpfs.de/studie/jim-studie-2025/" target="_blank" rel="noopener">JIM-Studie 2025</a></li>
+          <li><a href="https://www.weizenbauminstitut.de/fileadmin/user_upload/Weizenbaum_Report_2025_Politische_Partizipation_in_Deutschland.pdf" target="_blank" rel="noopener">Weizenbaum Report 2025</a></li>
+          <li><a href="https://www.tab-beim-bundestag.de/english/digital-society-and-economy_algorithms-in-digital-media-and-their-influence-on-opinion-formation.php" target="_blank" rel="noopener">TAB beim Deutschen Bundestag – Algorithmen &amp; Meinungsbildung</a></li>
+          <li><a href="https://www.bertelsmann-stiftung.de/de/publikationen/publikation/did/einwurf-062025-demokratie-im-feed-wie-algorithmen-politische-wirklichkeit-formen" target="_blank" rel="noopener">Bertelsmann Stiftung – Demokratie im Feed (2025)</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="ai-note">Hinweis zur KI-Unterstützung: Diese Website wurde mit Unterstützung von KI
+      (Claude) erstellt. Inhaltliche Grundlage bleibt ausschließlich die genannte SINUS-Quelle;
+      die Quellenangabe erfolgt gemäß Schulvorgabe auch bei KI-Nutzung. © 2026 Hassan Safi &amp; Damien Tran ·
+      PGW-Transferprojekt S2.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- progress bar ---------- */
+  var prog = document.getElementById('progress');
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    prog.style.width = (max>0 ? (h.scrollTop/max*100) : 0) + '%';
+  }
+  document.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  /* ---------- reveal on scroll ---------- */
+  var reveals = document.querySelectorAll('.reveal');
+  if(reduce || !('IntersectionObserver' in window)){
+    reveals.forEach(function(r){r.classList.add('in');});
+  } else {
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+    },{threshold:.14});
+    reveals.forEach(function(r){io.observe(r);});
+  }
+
+  /* =================================================================
+     RADAR — postmateriell vs. prekär
+     Werte: 1 = niedrig, 2 = mittel, 3 = hoch (ordinal, kein Messwert)
+  ================================================================= */
+  var AXES = [
+    {key:'pol', label:'Politisches Interesse', post:3, prek:1,
+      text:'Bei Postmateriellen gehören Politik und Zeitgeschehen zu den zentralen Interessen; sie nutzen u.a. überregionale Zeitungen und öffentlich-rechtliche Sender. Bei Prekären stehen eher alltagsnahe Themen im Vordergrund.'},
+    {key:'komp', label:'Nachrichtenkompetenz', post:3, prek:1,
+      text:'Postmaterielle gehen sehr reflektiert mit Medien um und suchen aktiv Hintergründe. Beim prekären Milieu sind die Hinweise auf Medien- und Nachrichtenkompetenz schwächer – Inhalte müssen einfach und schnell zugänglich sein.'},
+    {key:'dig', label:'Digitale Souveränität', post:3, prek:1,
+      text:'Postmaterielle nutzen digitale Angebote intensiv und souverän (wenn auch journalistisch-textbasiert). Das prekäre Milieu zeigt geringere digitale Sicherheit und nutzt Digitales mit mehr Unsicherheit.'},
+    {key:'viel', label:'Quellenvielfalt', post:3, prek:1,
+      text:'Postmaterielle greifen auf ein breites, fundiertes Informationsangebot zurück. Beim prekären Milieu ist das Medienrepertoire enger; digitale Angebote spielen eine geringere Rolle.'},
+    {key:'sm', label:'Social-Media-Nähe', post:1, prek:1,
+      text:'Beide liegen niedrig – aber aus verschiedenen Gründen: Postmaterielle begegnen sozialen Netzwerken bewusst distanziert; beim prekären Milieu spielen soziale Netzwerke schlicht eine geringere Rolle bzw. werden unsicher genutzt.'},
+    {key:'tv', label:'TV-/Fernseh­zentrierung', post:1, prek:3,
+      text:'Das prekäre Milieu ist stark fernsehzentriert und orientiert sich an Radio und vertrauten Printangeboten. Postmaterielle bevorzugen fundierte, textbasierte journalistische Inhalte.'}
+  ];
+  var visible = {post:true, prek:true};
+  var svg = document.getElementById('radar');
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var CX=240, CY=235, R=150, N=AXES.length;
+
+  function ang(i){ return -Math.PI/2 + i*2*Math.PI/N; }
+  function pt(i,val){ var r=val/3*R; return [CX+r*Math.cos(ang(i)), CY+r*Math.sin(ang(i))]; }
+  function el(tag,attrs){ var e=document.createElementNS(SVGNS,tag); for(var k in attrs){e.setAttribute(k,attrs[k]);} return e; }
+
+  function buildRadar(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    // rings
+    [1,2,3].forEach(function(lv){
+      var pts=[];
+      for(var i=0;i<N;i++){ var p=pt(i,lv); pts.push(p[0].toFixed(1)+','+p[1].toFixed(1)); }
+      svg.appendChild(el('polygon',{points:pts.join(' '),fill:'none',stroke:'#d8d0c2','stroke-width':1}));
+    });
+    svg.appendChild(el('text',{x:CX+4,y:CY-(1/3*R)+3,class:'ringlbl'})).textContent='niedrig';
+    svg.appendChild(el('text',{x:CX+4,y:CY-(2/3*R)+3,class:'ringlbl'})).textContent='mittel';
+    svg.appendChild(el('text',{x:CX+4,y:CY-R+3,class:'ringlbl'})).textContent='hoch';
+    // spokes + labels
+    AXES.forEach(function(ax,i){
+      var p=pt(i,3);
+      svg.appendChild(el('line',{x1:CX,y1:CY,x2:p[0],y2:p[1],stroke:'#e3dccf','stroke-width':1}));
+      var lp=pt(i,3.46);
+      var anchor = Math.abs(lp[0]-CX)<8 ? 'middle' : (lp[0]<CX ? 'end':'start');
+      var words = ax.label.split(' ');
+      var t=el('text',{x:lp[0].toFixed(1),y:lp[1].toFixed(1),'text-anchor':anchor,class:'axislbl'});
+      t.setAttribute('data-i',i);
+      words.forEach(function(w,wi){
+        var ts=el('tspan',{x:lp[0].toFixed(1),dy:(wi===0?0:13)});
+        ts.textContent=w.replace(/­/g,''); t.appendChild(ts);
+      });
+      t.addEventListener('click',function(){selectAxis(i);});
+      svg.appendChild(t);
+    });
+    // polygons per milieu
+    ['post','prek'].forEach(function(m){
+      if(!visible[m]) return;
+      var pts=[];
+      for(var i=0;i<N;i++){ var p=pt(i,AXES[i][m]); pts.push(p[0].toFixed(1)+','+p[1].toFixed(1)); }
+      var color = m==='post' ? getCss('--post') : getCss('--prek');
+      var fill  = m==='post' ? getCss('--post-tint') : getCss('--prek-tint');
+      svg.appendChild(el('polygon',{points:pts.join(' '),fill:fill,stroke:color,'stroke-width':2.5,'stroke-linejoin':'round'}));
+      for(var j=0;j<N;j++){
+        var q=pt(j,AXES[j][m]);
+        var c=el('circle',{cx:q[0].toFixed(1),cy:q[1].toFixed(1),r:5.5,fill:color,class:'vtx',tabindex:0,role:'button'});
+        c.setAttribute('data-i',j);
+        c.setAttribute('aria-label', AXES[j].label+', '+(m==='post'?'postmateriell':'prekär')+': '+lvlName(AXES[j][m]));
+        c.addEventListener('click',(function(idx){return function(){selectAxis(idx);};})(j));
+        c.addEventListener('keydown',(function(idx){return function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();selectAxis(idx);}};})(j));
+        svg.appendChild(c);
+      }
+    });
+  }
+  function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  function lvlName(v){ return v===3?'hoch':v===2?'mittel':'niedrig'; }
+
+  function selectAxis(i){
+    var ax=AXES[i];
+    document.getElementById('adTitle').textContent=ax.label.replace(/­/g,'');
+    document.getElementById('adText').textContent=ax.text;
+    document.getElementById('adVals').innerHTML=
+      '<span class="post-val">● Postmateriell: <b>'+lvlName(ax.post)+'</b></span>'+
+      '<span class="prek-val">● Prekär: <b>'+lvlName(ax.prek)+'</b></span>';
+    svg.querySelectorAll('text.axislbl').forEach(function(t){
+      t.classList.toggle('active', +t.getAttribute('data-i')===i);
+    });
+  }
+
+  function setToggle(m,btn){
+    visible[m]=!visible[m];
+    if(!visible.post && !visible.prek){ visible[m]=true; return; } // keep at least one
+    btn.setAttribute('aria-pressed', String(visible[m]));
+    buildRadar();
+  }
+  document.getElementById('tg-post').addEventListener('click',function(){setToggle('post',this);});
+  document.getElementById('tg-prek').addEventListener('click',function(){setToggle('prek',this);});
+  buildRadar();
+  selectAxis(1); // start on Nachrichtenkompetenz
+
+  /* =================================================================
+     BARS — Nachrichtenkompetenz / Fake News
+     val: 'hoch' | 'niedrig' | 'na' (nicht ausgewiesen)
+  ================================================================= */
+  var MILIEUS = [
+    {name:'Postmaterielle', fn:'hoch', gl:'hoch',
+      d:'Trauen sich Fake-News-Erkennung zu und schneiden bei der Glaubwürdigkeits­beurteilung gut ab; reflektierter, quellenkritischer Umgang.'},
+    {name:'Performer', fn:'hoch', gl:'hoch',
+      d:'Digital versiert und nutzenorientiert; gehören sowohl bei Fake-News-Erkennung als auch bei der Glaubwürdigkeits­beurteilung zur höheren Gruppe.'},
+    {name:'Expeditive', fn:'hoch', gl:'hoch',
+      d:'Souverän in digitalen und multimedialen Umgebungen; in beiden Selbsteinschätzungen klar in der oberen Gruppe.'},
+    {name:'Neo-Ökologische', fn:'na', gl:'hoch',
+      d:'Bei der Glaubwürdigkeits­beurteilung in der oberen Gruppe. Zur Fake-News-Selbsteinschätzung trifft die Quelle für dieses Milieu keine ausdrückliche Aussage – daher „nicht ausgewiesen".'},
+    {name:'Konservativ-Gehobene', fn:'hoch', gl:'na',
+      d:'Trauen sich Fake-News-Erkennung eher zu und legen Wert auf Seriosität und verlässliche Quellen. Zur Glaubwürdigkeits­beurteilung wird dieses Milieu in der Quelle nicht ausdrücklich eingeordnet.'},
+    {name:'Nostalgisch-Bürgerliche', fn:'niedrig', gl:'niedrig',
+      d:'Nutzen digitale Medien zurückhaltend; liegen bei beiden Selbsteinschätzungen deutlich niedriger.'},
+    {name:'Traditionelle', fn:'niedrig', gl:'niedrig',
+      d:'Geringste digitale Sicherheit, häufiger von Digitalisierung überfordert, weniger Sicherheit im Umgang mit Fake News.'},
+    {name:'Prekäre', fn:'niedrig', gl:'niedrig',
+      d:'Fernsehzentriert und digital unsicher; trauen sich Fake-News-Erkennung und Glaubwürdigkeits­beurteilung deutlich seltener zu.'}
+  ];
+  var W = {hoch:'100%', niedrig:'38%'};
+  function fillHTML(val){
+    if(val==='na') return '<div class="track na"><span class="nalabel">nicht ausgewiesen</span></div>';
+    var cls = val==='hoch'?'hoch':'niedrig';
+    var txt = val==='hoch'?'eher hoch':'niedriger';
+    return '<div class="track"><div class="fill '+cls+'" data-w="'+W[val]+'">'+txt+'</div></div>';
+  }
+  var barsEl = document.getElementById('bars');
+  MILIEUS.forEach(function(m,idx){
+    var row=document.createElement('div');
+    row.className='brow'; row.setAttribute('tabindex','0'); row.setAttribute('role','button');
+    row.setAttribute('aria-expanded','false');
+    row.innerHTML =
+      '<div class="brow-head"><span class="name">'+m.name+'</span><span class="chev">Beleg ▾</span></div>'+
+      '<div class="metric"><span class="mlabel">Fake News erkennen (Selbsteinschätzung)</span>'+fillHTML(m.fn)+'</div>'+
+      '<div class="metric"><span class="mlabel">Glaubwürdigkeit beurteilen</span>'+fillHTML(m.gl)+'</div>'+
+      '<div class="detail">'+m.d+'</div>';
+    function toggle(){
+      var open=row.classList.toggle('open');
+      row.setAttribute('aria-expanded',String(open));
+      row.querySelector('.chev').textContent = open ? 'Beleg ▴' : 'Beleg ▾';
+    }
+    row.addEventListener('click',toggle);
+    row.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
+    barsEl.appendChild(row);
+  });
+  // animate fills when bars scroll into view
+  function animateBars(){ barsEl.querySelectorAll('.fill').forEach(function(f){ f.style.width=f.getAttribute('data-w'); }); }
+  if(reduce || !('IntersectionObserver' in window)){ animateBars(); }
+  else {
+    var bio=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){animateBars();bio.disconnect();}});},{threshold:.2});
+    bio.observe(barsEl);
+  }
+
+  /* =================================================================
+     BELEGT / HYPOTHESE toggle
+  ================================================================= */
+  var flow=document.getElementById('flow'), expl=document.getElementById('bhExplain');
+  var bB=document.getElementById('bhBelegt'), bH=document.getElementById('bhHypo');
+  function setBH(state){
+    flow.className='flow show-'+state;
+    expl.setAttribute('data-state',state);
+    bB.setAttribute('aria-pressed',String(state==='belegt'));
+    bH.setAttribute('aria-pressed',String(state==='hypo'));
+  }
+  bB.addEventListener('click',function(){setBH('belegt');});
+  bH.addEventListener('click',function(){setBH('hypo');});
+
+})();
+</script>
+</body>
+</html>
